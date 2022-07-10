@@ -1,17 +1,27 @@
-import { takeEvery, put, call } from "redux-saga/effects";
-import { GET_LATEST_NEWS } from "../constants";
-import { getLatestNews } from "../../api/index";
-import { setLatestNews } from "../actions/actionCreator";
+import { takeEvery, put, call, fork } from "redux-saga/effects";
+import { GET_NEWS } from "../constants";
+import { setLatestNews, setPopularNews } from "../actions/actionCreator";
+import { getLatestNews, getPopularNews } from "../../api/index";
 
 export function* handleLatestNews() {
-  const { hits } = yield call(getLatestNews, 'react');
+  const { hits } = yield call(getLatestNews, "react");
   yield put(setLatestNews(hits));
 }
 
-export function* watchClickSaga() {
-  yield takeEvery(GET_LATEST_NEWS, handleLatestNews);
+export function* handlePopularNews() {
+  const { hits } = yield call(getPopularNews);
+  yield put(setPopularNews(hits));
 }
-setLatestNews();
+
+export function* handleNews() {
+  yield fork(handleLatestNews);
+  yield fork(handlePopularNews);
+}
+
+export function* watchClickSaga() {
+  yield takeEvery(GET_NEWS, handleNews);
+}
+
 export default function* rootSaga() {
   yield watchClickSaga();
 }
